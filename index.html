@@ -1,44 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quel club de co-développement te correspond ?</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      border: 1px solid #e5e7eb;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-label { font-size: 13px; color: #555; font-weight: 500; }
+    .progress-pct { font-size: 13px; color: #4A7C59; font-weight: 700; }
+    .progress-bar-bg {
+      height: 6px; background: #e5e7eb; border-radius: 99px; margin-bottom: 28px;
+    }
+    .progress-bar-fill {
+      height: 6px; background: #4A7C59; border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .question-icon { font-size: 32px; text-align: center; margin-bottom: 10px; }
+    .question-text {
+      font-size: 18px; font-weight: 700; color: #111;
+      line-height: 1.5; text-align: center; margin-bottom: 24px;
+    }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option-btn {
+      text-align: left; padding: 14px 18px; border-radius: 12px;
+      border: 2px solid #e5e7eb; background: #fff; color: #374151;
+      font-size: 14px; cursor: pointer; transition: all 0.15s ease;
+      line-height: 1.5; font-family: inherit;
+    }
+    .option-btn:hover { border-color: #4A7C59; color: #4A7C59; }
+    .option-btn.selected {
+      border-color: #4A7C59; background: rgba(74,124,89,0.07);
+      color: #4A7C59; font-weight: 600;
+    }
+    .next-btn {
+      width: 100%; margin-top: 24px; padding: 13px 0; border-radius: 12px;
+      border: none; background: #4A7C59; color: #fff; font-weight: 700;
+      font-size: 15px; cursor: pointer; transition: background 0.2s; font-family: inherit;
+    }
+    .next-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+    .next-btn:not(:disabled):hover { background: #3a6347; }
 
-import { useState } from "react";
+    /* Results */
+    .result-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+    .result-title { font-size: 22px; font-weight: 700; color: #111; text-align: center; margin-bottom: 4px; }
+    .result-subtitle { color: #555; font-size: 14px; text-align: center; margin-bottom: 28px; }
+    .club-card {
+      border: 1px solid #e5e7eb; border-radius: 14px;
+      padding: 18px 20px; margin-bottom: 16px;
+    }
+    .club-card.first { border-left: 5px solid #4A7C59; background: rgba(74,124,89,0.05); }
+    .club-card.second { border-left: 5px solid #111; background: #f9f9f9; }
+    .club-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .club-emoji { font-size: 28px; }
+    .club-rank { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .club-card.first .club-rank { color: #4A7C59; }
+    .club-card.second .club-rank { color: #555; }
+    .club-name { font-size: 18px; font-weight: 700; color: #111; }
+    .club-desc { color: #444; font-size: 14px; line-height: 1.6; }
+    .restart-btn {
+      width: 100%; margin-top: 12px; padding: 13px 0; border-radius: 12px;
+      border: none; background: #4A7C59; color: #fff; font-weight: 700;
+      font-size: 15px; cursor: pointer; font-family: inherit;
+    }
+    .restart-btn:hover { background: #3a6347; }
+  </style>
+</head>
+<body>
+<div class="card" id="app"></div>
 
+<script>
 const ACCENT = "#4A7C59";
 
 const clubs = {
   REC: {
-    name: "Club REC",
-    emoji: "🎯",
-    desc: "Le club des recruteurs terrain. Tu y parles sourcing, entretiens, pipelines et réalités du quotidien en acquisition de talents.",
-    color: ACCENT
+    name: "Club REC", emoji: "🎯",
+    desc: "Le club des recruteurs terrain. Tu y parles sourcing, entretiens, pipelines et réalités du quotidien en acquisition de talents."
   },
   DOT: {
-    name: "Club DOT",
-    emoji: "🔍",
-    desc: "Pour les gestionnaires en recrutement qui dirigent une équipe. Tu y parles leadership, gestion de la performance, organisation de la fonction dotation et développement de tes recruteurs.",
-    color: ACCENT
+    name: "Club DOT", emoji: "🔍",
+    desc: "Pour les gestionnaires en recrutement qui dirigent une équipe. Tu y parles leadership, gestion de la performance, organisation de la fonction dotation et développement de tes recruteurs."
   },
   BOT: {
-    name: "Club BOT",
-    emoji: "🤖",
-    desc: "Pour les passionné·e·s d'outils, d'IA et d'automatisation en RH. Tu veux optimiser, tester, et comprendre la tech au service du recrutement.",
-    color: ACCENT
+    name: "Club BOT", emoji: "🤖",
+    desc: "Pour les passionné·e·s d'outils, d'IA et d'automatisation en RH. Tu veux optimiser, tester, et comprendre la tech au service du recrutement."
   },
   MRH: {
-    name: "Club MRH",
-    emoji: "✨",
-    desc: "Marque employeur, expérience candidat, communication RH. Pour ceux qui travaillent l'attractivité et l'image de l'organisation.",
-    color: ACCENT
+    name: "Club MRH", emoji: "✨",
+    desc: "Marque employeur, expérience candidat, communication RH. Pour ceux qui travaillent l'attractivité et l'image de l'organisation."
   },
   DRH: {
-    name: "Club DRH",
-    emoji: "🏛️",
-    desc: "Espace stratégique pour les directions RH. Enjeux organisationnels, gouvernance, transformation RH et vision globale.",
-    color: ACCENT
+    name: "Club DRH", emoji: "🏛️",
+    desc: "Espace stratégique pour les directions RH. Enjeux organisationnels, gouvernance, transformation RH et vision globale."
   }
 };
 
 const questions = [
   {
-    id: 1,
     text: "Comment tu décrirais ton rôle principal au quotidien ?",
     options: [
       { label: "Je recrute, je source, je rencontre des candidats", scores: { REC: 3, DOT: 1 } },
@@ -49,7 +130,6 @@ const questions = [
     ]
   },
   {
-    id: 2,
     text: "Quel sujet t'allume le plus en ce moment ?",
     options: [
       { label: "Continuer à développer mon expertise en acquisition de talent", scores: { REC: 3, BOT: 1 } },
@@ -60,7 +140,6 @@ const questions = [
     ]
   },
   {
-    id: 3,
     text: "Quand tu penses à la prochaine année, ton énergie va surtout vers…",
     options: [
       { label: "Perfectionner ma pratique de recrutement au quotidien", scores: { REC: 2 } },
@@ -71,7 +150,6 @@ const questions = [
     ]
   },
   {
-    id: 4,
     text: "Le défi qui te garde éveillé·e la nuit, c'est plutôt…",
     options: [
       { label: "Trouver les bons profils dans un marché compétitif", scores: { REC: 3, MRH: 1 } },
@@ -82,18 +160,16 @@ const questions = [
     ]
   },
   {
-    id: 5,
     text: "Dans un groupe de co-développement, tu veux surtout…",
     options: [
       { label: "Échanger des trucs concrets avec des pairs en recrutement", scores: { REC: 2 } },
-      { label: "Réfléchir à des pratiques et systèmes plus performants", scores: { DOT: 3, BOT: 1 } },
-      { label: "Apprendre et tester de nouveaux outils ensemble", scores: { BOT: 3, REC: 1 } },
-      { label: "Co-créer des approches pour mieux attirer les talents", scores: { MRH: 3, DOT: 1 } },
-      { label: "Discuter des enjeux stratégiques avec d'autres leaders RH", scores: { DRH: 3, MRH: 1 } },
+      { label: "Réfléchir à des pratiques et systèmes plus performants", scores: { DOT: 2 } },
+      { label: "Apprendre et tester de nouveaux outils ensemble", scores: { BOT: 2 } },
+      { label: "Co-créer des approches pour mieux attirer les talents", scores: { MRH: 2 } },
+      { label: "Discuter des enjeux stratégiques avec d'autres leaders RH", scores: { DRH: 2 } },
     ]
   },
   {
-    id: 6,
     text: "Ton expérience en RH, c'est…",
     options: [
       { label: "En recrutement ou en acquisition de talent", scores: { REC: 3, DOT: 1 } },
@@ -105,124 +181,107 @@ const questions = [
   }
 ];
 
-export default function ClubQuiz() {
-  const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [selected, setSelected] = useState(null);
-  const [result, setResult] = useState(null);
+let current = 0;
+let scores = { REC: 0, DOT: 0, BOT: 0, MRH: 0, DRH: 0 };
+let selected = null;
 
-  const totalQ = questions.length;
-  const progress = (current / totalQ) * 100;
-
-  function handleSelect(opt) {
-    setSelected(opt);
+function render() {
+  const app = document.getElementById('app');
+  if (current >= questions.length) {
+    renderResult(app);
+  } else {
+    renderQuestion(app);
   }
-
-  function handleNext() {
-    if (selected === null) return;
-    const newAnswers = { ...answers };
-    Object.entries(selected.scores).forEach(([club, pts]) => {
-      newAnswers[club] = (newAnswers[club] || 0) + pts;
-    });
-    if (current + 1 < totalQ) {
-      setAnswers(newAnswers);
-      setCurrent(current + 1);
-      setSelected(null);
-    } else {
-      computeResult(newAnswers);
-    }
-  }
-
-  function computeResult(scores) {
-    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    setResult([sorted[0][0], sorted[1][0]]);
-  }
-
-  function restart() {
-    setCurrent(0);
-    setAnswers({});
-    setSelected(null);
-    setResult(null);
-  }
-
-  if (result) {
-    const [first, second] = result;
-    const c1 = clubs[first];
-    const c2 = clubs[second];
-    return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'Segoe UI', sans-serif" }}>
-        <div style={{ background: "#fff", borderRadius: 20, padding: "40px 36px", maxWidth: 560, width: "100%", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", border: "1px solid #e5e7eb" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div style={{ fontSize: 48 }}>🎉</div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: "#111", margin: "10px 0 4px" }}>Tes 2 clubs idéaux</h2>
-            <p style={{ color: "#555", fontSize: 14 }}>Basé sur tes réponses, voici les communautés qui te correspondent le mieux.</p>
-          </div>
-
-          {[{ club: c1, rank: "Premier choix" }, { club: c2, rank: "Deuxième choix" }].map(({ club, rank }, idx) => (
-            <div key={club.name} style={{ border: `1px solid #e5e7eb`, borderLeft: `5px solid ${idx === 0 ? ACCENT : "#111"}`, borderRadius: 14, padding: "18px 20px", marginBottom: 16, background: idx === 0 ? `${ACCENT}0d` : "#f9f9f9" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 28 }}>{club.emoji}</span>
-                <div>
-                  <div style={{ fontSize: 11, color: idx === 0 ? ACCENT : "#555", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{rank}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#111" }}>{club.name}</div>
-                </div>
-              </div>
-              <p style={{ color: "#444", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{club.desc}</p>
-            </div>
-          ))}
-
-          <button onClick={restart} style={{ width: "100%", marginTop: 12, padding: "13px 0", borderRadius: 12, border: "none", background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
-            Recommencer le quiz
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const q = questions[current];
-
-  return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", fontFamily: "'Segoe UI', sans-serif" }}>
-      <div style={{ background: "#fff", borderRadius: 20, padding: "40px 36px", maxWidth: 560, width: "100%", boxShadow: "0 8px 40px rgba(0,0,0,0.10)" }}>
-        
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 500 }}>Question {current + 1} sur {totalQ}</span>
-            <span style={{ fontSize: 13, color: "#4F46E5", fontWeight: 700 }}>{Math.round(((current) / totalQ) * 100)}%</span>
-          </div>
-          <div style={{ height: 6, background: "#e5e7eb", borderRadius: 99 }}>
-            <div style={{ height: 6, background: "linear-gradient(90deg, #4F46E5, #DB2777)", borderRadius: 99, width: `${progress}%`, transition: "width 0.4s ease" }} />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 8, textAlign: "center" }}>
-          <div style={{ fontSize: 32, marginBottom: 10 }}>🤔</div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1e1e2e", lineHeight: 1.5, margin: 0 }}>{q.text}</h2>
-        </div>
-
-        <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10 }}>
-          {q.options.map((opt, i) => {
-            const isSel = selected === opt;
-            return (
-              <button key={i} onClick={() => handleSelect(opt)} style={{
-                textAlign: "left", padding: "14px 18px", borderRadius: 12, border: isSel ? "2px solid #4F46E5" : "2px solid #e5e7eb",
-                background: isSel ? "#EEF2FF" : "#fff", color: isSel ? "#4F46E5" : "#374151",
-                fontWeight: isSel ? 600 : 400, fontSize: 14, cursor: "pointer", transition: "all 0.15s ease", lineHeight: 1.5
-              }}>
-                {isSel ? "✓ " : ""}{opt.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <button onClick={handleNext} disabled={selected === null} style={{
-          width: "100%", marginTop: 24, padding: "13px 0", borderRadius: 12, border: "none",
-          background: selected ? "#4F46E5" : "#d1d5db", color: "#fff", fontWeight: 700, fontSize: 15,
-          cursor: selected ? "pointer" : "not-allowed", transition: "background 0.2s"
-        }}>
-          {current + 1 === totalQ ? "Voir mes résultats →" : "Question suivante →"}
-        </button>
-      </div>
-    </div>
-  );
 }
+
+function renderQuestion(app) {
+  const q = questions[current];
+  const total = questions.length;
+  const pct = Math.round((current / total) * 100);
+
+  app.innerHTML = `
+    <div class="progress-header">
+      <span class="progress-label">Question ${current + 1} sur ${total}</span>
+      <span class="progress-pct">${pct}%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: ${pct}%"></div>
+    </div>
+    <div class="question-icon">🤔</div>
+    <div class="question-text">${q.text}</div>
+    <div class="options">
+      ${q.options.map((opt, i) => `
+        <button class="option-btn" data-index="${i}">${opt.label}</button>
+      `).join('')}
+    </div>
+    <button class="next-btn" id="nextBtn" disabled>
+      ${current + 1 === total ? 'Voir mes résultats →' : 'Question suivante →'}
+    </button>
+  `;
+
+  app.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      app.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selected = q.options[parseInt(btn.dataset.index)];
+      document.getElementById('nextBtn').disabled = false;
+    });
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (!selected) return;
+    Object.entries(selected.scores).forEach(([club, pts]) => {
+      scores[club] = (scores[club] || 0) + pts;
+    });
+    current++;
+    selected = null;
+    render();
+  });
+}
+
+function renderResult(app) {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const [first, second] = [clubs[sorted[0][0]], clubs[sorted[1][0]]];
+
+  app.innerHTML = `
+    <div class="result-icon">🎉</div>
+    <div class="result-title">Tes 2 clubs idéaux</div>
+    <div class="result-subtitle">Basé sur tes réponses, voici les communautés qui te correspondent le mieux.</div>
+
+    <div class="club-card first">
+      <div class="club-header">
+        <span class="club-emoji">${first.emoji}</span>
+        <div>
+          <div class="club-rank">Premier choix</div>
+          <div class="club-name">${first.name}</div>
+        </div>
+      </div>
+      <div class="club-desc">${first.desc}</div>
+    </div>
+
+    <div class="club-card second">
+      <div class="club-header">
+        <span class="club-emoji">${second.emoji}</span>
+        <div>
+          <div class="club-rank">Deuxième choix</div>
+          <div class="club-name">${second.name}</div>
+        </div>
+      </div>
+      <div class="club-desc">${second.desc}</div>
+    </div>
+
+    <button class="restart-btn" id="restartBtn">Recommencer le quiz</button>
+  `;
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    current = 0;
+    scores = { REC: 0, DOT: 0, BOT: 0, MRH: 0, DRH: 0 };
+    selected = null;
+    render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
